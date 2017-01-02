@@ -1,6 +1,7 @@
 ﻿# coding: utf-8
+# ver 0.1.1
 
-from comtypes.client import CreateObject
+import xv
 import speech
 import synthDriverHandler, os, config, re, logging
 from logHandler import log
@@ -10,20 +11,6 @@ from collections import OrderedDict
 
 minValue = 0
 maxValue = 10
-XV = None
-SI = None
-
-def InitializeXVSynth():
-	global XV, SI
-	try:
-		obj = CreateObject('SenseReader.Application')
-		XV = obj.SpeechControlers.Add('test')
-		XV.Init('')
-		SI = XV.NewSpeakInfo()
-	except:
-		pass
-
-
 
 class SynthDriver(synthDriverHandler.SynthDriver):
  supportedSettings = [SynthDriver.PitchSetting()]
@@ -34,43 +21,48 @@ class SynthDriver(synthDriverHandler.SynthDriver):
 
  @classmethod
  def check(cls):
-  global XV, SI
-  InitializeXVSynth()
-  if XV is not None:
-   return True
-  else:
-   return False
-
+  return xv.InitializeXVSynth()
 
  def __init__(self):
-  lang = languageHandler.getLanguage()
-  self.rate = 4
-  self.speakingLanguage=lang
-
+  try:
+   lang = languageHandler.getLanguage()
+   self.speakingLanguage=lang
+   xv.si.Speed = 2
+   xv.si.Volume = 4
+   xv.si.Pitch = 4
+  except:
+   pass
 
  def speak(self,speechSequence):
-  for item in speechSequence:
-   if isinstance(item, basestring):
-    XV.Speak(item, SI)
+  try:
+   for item in speechSequence:
+    if isinstance(item, basestring):
+     xv.ctrl.Speak(item, xv.si)
+  except:
+   pass
 
  def speakText(self, test, index=None):
-  if isinstance(text, basestring):
-   XV.Speak(text, SI)
-
-
+  try:
+   if isinstance(text, basestring):
+    xv.ctrl.Speak(text, xv.si)
+  except:
+   pass
 
  def pause(self,switch):
-  XV.Stop()
-
+  try:
+   if not xv.ctrl.Speaking: return
+   xv.ctrl.Stop()
+  except:
+   pass
  def cancel(self):
-  XV.Stop()
-
+  try:
+   if not xv.ctrl.Speaking: return
+   xv.ctrl.Stop()
+  except:
+   pass
 
  def _get_rate(self):
   pass
 
  def _set_rate(self, vl):
   pass
-
- def terminate(self):
-  XV = SI = None
