@@ -12,10 +12,8 @@ from _XVSynth import xvEngine
 from comtypes.client import CreateObject
 
 
-
-
 class SynthDriver(synthDriverHandler.SynthDriver):
- supportedSettings = [SynthDriver.PitchSetting(), SynthDriver.RateSetting(), SynthDriver.VolumeSetting()]
+ supportedSettings = [SynthDriver.PitchSetting(10), SynthDriver.RateSetting(10), SynthDriver.VolumeSetting(10)]
 
 # supportedSettings=(SynthDriver.VoiceSetting(),SynthDriver.VariantSetting(),SynthDriver.RateSetting(), SynthDriver.PitchSetting(), SynthDriver.InflectionSetting(), SynthDriver.VolumeSetting())
  description = 'SenseReader Synth'
@@ -33,6 +31,9 @@ class SynthDriver(synthDriverHandler.SynthDriver):
   self.xv = xvEngine()
   lang = languageHandler.getLanguage()
   self.speakingLanguage=lang
+  self.minValue = 0
+  self.maxValue = 10
+
 
  def speak(self,speechSequence):
   try:
@@ -64,14 +65,14 @@ class SynthDriver(synthDriverHandler.SynthDriver):
 
  def _get_rate(self):
   try:
-   return self.xv.si.Speed * 5
+   return self._paramToPercent(self.xv.si.Speed, self.minValue, self.maxValue)
   except:
    pass
 
 
  def _set_rate(self, vl):
   try:
-   self.xv.si.Speed = int(math.ceil(vl * 0.2))
+   self.xv.si.Speed = self._percentToParam(vl, self.minValue, self.maxValue)
   except:
    pass
  
@@ -79,14 +80,14 @@ class SynthDriver(synthDriverHandler.SynthDriver):
 
  def _get_volume(self):
   try:
-   return self.xv.si.Volume * 5
+   return self._paramToPercent(self.xv.si.Volume, self.minValue, self.maxValue)
   except:
    pass
 
 
  def _set_volume(self, vl):
   try:
-   self.xv.si.Volume = int(math.ceil(vl * 0.2))
+   self.xv.si.Volume = self._percentToParam(vl, self.minValue, self.maxValue)
   except:
    pass
 
@@ -94,13 +95,13 @@ class SynthDriver(synthDriverHandler.SynthDriver):
 
  def _get_pitch(self):
   try:
-   return self.xv.si.Pitch * 5
+   return self._paramToPercent(self.xv.si.Pitch, self.minValue, self.maxValue)
   except:
    pass
 
 
  def _set_pitch(self, vl):
   try:
-   self.xv.si.Pitch = int(math.ceil(vl * 0.2))
+   self.xv.si.Pitch = self._percentToParam(vl, self.minValue, self.maxValue)
   except:
    pass
