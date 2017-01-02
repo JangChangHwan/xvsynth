@@ -1,7 +1,6 @@
 ﻿# coding: utf-8
-# ver 0.2.0
+# ver 0.2.1
 
-from comtypes.client import CreateObject
 import math
 import speech
 import synthDriverHandler, os, config, re, logging
@@ -9,25 +8,9 @@ from logHandler import log
 from synthDriverHandler import SynthDriver, VoiceInfo, BooleanSynthSetting
 import languageHandler
 from collections import OrderedDict
+from _XVSynth import xvEngine
+from comtypes.client import CreateObject
 
-
-
-ctrl = None
-si = None
-
-def InitializeXVSynth():
-	try:
-		global ctrl, si
-		obj = CreateObject('SenseReader.Application')
-		ctrl = obj.SpeechControlers.Add('test')
-		ctrl.Init('')
-		si = ctrl.NewSpeakInfo()
-		if ctrl is not None and si is not None:
-			return True
-		else:
-			return False
-	except:
-		return False
 
 
 
@@ -38,12 +21,16 @@ class SynthDriver(synthDriverHandler.SynthDriver):
  description = 'SenseReader Synth'
  name = 'XVSynth'
  speakingLanguage=""
-
  @classmethod
  def check(cls):
-  return InitializeXVSynth()
+  try:
+   obj = CreateObject('SenseReader.Application')
+   return True
+  except:
+   return False
 
  def __init__(self):
+  self.xv = xvEngine()
   lang = languageHandler.getLanguage()
   self.speakingLanguage=lang
 
@@ -51,40 +38,40 @@ class SynthDriver(synthDriverHandler.SynthDriver):
   try:
    for item in speechSequence:
     if isinstance(item, basestring):
-     ctrl.Speak(item, si)
+     self.xv.ctrl.Speak(item, self.xv.si)
   except:
    pass
 
  def speakText(self, test, index=None):
   try:
    if isinstance(text, basestring):
-    ctrl.Speak(text, si)
+    self.xv.ctrl.Speak(text, self.xv.si)
   except:
    pass
 
  def pause(self,switch):
   try:
-   if not ctrl.Speaking: return
-   ctrl.Stop()
+   if not self.xv.ctrl.Speaking: return
+   self.xv.ctrl.Stop()
   except:
    pass
  def cancel(self):
   try:
-   if not ctrl.Speaking: return
-   ctrl.Stop()
+   if not self.xv.ctrl.Speaking: return
+   self.xv.ctrl.Stop()
   except:
    pass
 
  def _get_rate(self):
   try:
-   return si.Speed * 5
+   return self.xv.si.Speed * 5
   except:
    pass
 
 
  def _set_rate(self, vl):
   try:
-   si.Speed = int(math.ceil(vl * 0.2))
+   self.xv.si.Speed = int(math.ceil(vl * 0.2))
   except:
    pass
  
@@ -92,14 +79,14 @@ class SynthDriver(synthDriverHandler.SynthDriver):
 
  def _get_volume(self):
   try:
-   return si.Volume * 5
+   return self.xv.si.Volume * 5
   except:
    pass
 
 
  def _set_volume(self, vl):
   try:
-   si.Volume = int(math.ceil(vl * 0.2))
+   self.xv.si.Volume = int(math.ceil(vl * 0.2))
   except:
    pass
 
@@ -107,13 +94,13 @@ class SynthDriver(synthDriverHandler.SynthDriver):
 
  def _get_pitch(self):
   try:
-   return si.Pitch * 5
+   return self.xv.si.Pitch * 5
   except:
    pass
 
 
  def _set_pitch(self, vl):
   try:
-   si.Pitch = int(math.ceil(vl * 0.2))
+   self.xv.si.Pitch = int(math.ceil(vl * 0.2))
   except:
    pass
